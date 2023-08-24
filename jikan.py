@@ -9,7 +9,7 @@ class JikanAPI:
     REQUEST_DELAY = 3  # Seconds
 
     DATA_DIR = "data"
-    CHARACTERS_LIST_FILE = f"{DATA_DIR}/character_list.json"
+    CHARACTERS_LIST_FILE = f"{DATA_DIR}/characters_list.json"
     METADATA_FILE = f"{DATA_DIR}/metadata.json"
 
     def __init__(self):
@@ -19,36 +19,38 @@ class JikanAPI:
         self.last_visible_page = meta["characters_search"]["last_visible_page"]
 
     def get_all_characters(self):
+        print("COMMENCING GETTING ALL CHARACTERS")
         for page in range(self.last_page_saved, self.last_visible_page + 1):
             self.wait_after_request()
             params = {
                 "page": page
             }
+            print(f"sending request for page: {page}")
             res = self.send_request_and_retry(self.CHARACTER_SEARCH_URL, params)
             res_json = res.json()
             res_characters_list = res_json["data"]
             self.extend_characters_list(res_characters_list)
             self.update_last_saved(page)
 
-            print(f"PAGE {page}/{self.last_visible_page} done")
+            print(f"{page}/{self.last_visible_page} pages done")
 
     def extend_characters_list(self, new_characters_list):
-        with open(self.CHARACTERS_LIST_FILE, "r") as jsonFile:
+        with open(self.CHARACTERS_LIST_FILE, "r", encoding='utf8') as jsonFile:
             characters_list = json.load(jsonFile)
 
         characters_list.extend(new_characters_list)
 
-        with open(self.CHARACTERS_LIST_FILE, "w") as jsonFile:
-            json.dump(characters_list, jsonFile)
+        with open(self.CHARACTERS_LIST_FILE, "w",  encoding='utf8') as jsonFile:
+            json.dump(characters_list, jsonFile, indent=4, ensure_ascii=False)
 
     def update_last_saved(self, new_last_saved):
-        with open(self.METADATA_FILE, "r") as jsonFile:
+        with open(self.METADATA_FILE, "r",  encoding='utf8') as jsonFile:
             metadata = json.load(jsonFile)
 
         metadata["characters_search"]["last_page_saved"] = new_last_saved
 
-        with open(self.METADATA_FILE, "w") as jsonFile:
-            json.dump(metadata, jsonFile)
+        with open(self.METADATA_FILE, "w",  encoding='utf8') as jsonFile:
+            json.dump(metadata, jsonFile, indent=4, ensure_ascii=False)
 
     def wait_after_request(self):
         time.sleep(self.REQUEST_DELAY)
@@ -78,8 +80,10 @@ class JikanAPI:
 
         return res
 
-
-
+    def run_print(self):
+        print("running print in method")
+        time.sleep(5)
+        print(self.last_visible_page)
 
 
 
