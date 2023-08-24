@@ -1,6 +1,7 @@
 import time
 import requests
 import json
+from mongodb import MongoAPI
 
 
 class JikanAPI:
@@ -9,10 +10,11 @@ class JikanAPI:
     REQUEST_DELAY = 3  # Seconds
 
     DATA_DIR = "data"
-    CHARACTERS_LIST_FILE = f"{DATA_DIR}/characters_list.json"
     METADATA_FILE = f"{DATA_DIR}/metadata.json"
 
-    def __init__(self):
+    def __init__(self, mongo: MongoAPI):
+        self.mongo = mongo
+
         with open(self.METADATA_FILE, "r") as jsonFile:
             meta = json.load(jsonFile)
         self.last_page_saved = meta["characters_search"]["last_page_saved"]
@@ -20,7 +22,7 @@ class JikanAPI:
 
     def get_all_characters(self):
         print("COMMENCING GETTING ALL CHARACTERS")
-        for page in range(self.last_page_saved, self.last_visible_page + 1):
+        for page in range(self.last_page_saved + 1, self.last_visible_page + 1):
             self.wait_after_request()
             params = {
                 "page": page
@@ -28,20 +30,21 @@ class JikanAPI:
             print(f"sending request for page: {page}")
             res = self.send_request_and_retry(self.CHARACTER_SEARCH_URL, params)
             res_json = res.json()
-            res_characters_list = res_json["data"]
-            self.extend_characters_list(res_characters_list)
+            res_character_list = res_json["data"]
+            self.extend_character_list(res_character_list)
             self.update_last_saved(page)
 
             print(f"{page}/{self.last_visible_page} pages done")
 
-    def extend_characters_list(self, new_characters_list):
-        with open(self.CHARACTERS_LIST_FILE, "r", encoding='utf8') as jsonFile:
-            characters_list = json.load(jsonFile)
-
-        characters_list.extend(new_characters_list)
-
-        with open(self.CHARACTERS_LIST_FILE, "w",  encoding='utf8') as jsonFile:
-            json.dump(characters_list, jsonFile, indent=4, ensure_ascii=False)
+    def extend_character_list(self, new_character_list):
+        self.mongo.insert_character_list(new_character_list)
+        # with open(self.CHARACTERS_LIST_FILE, "r", encoding='utf8') as jsonFile:
+        #     characters_list = json.load(jsonFile)
+        #
+        # characters_list.extend(new_characters_list)
+        #
+        # with open(self.CHARACTERS_LIST_FILE, "w",  encoding='utf8') as jsonFile:
+        #     json.dump(characters_list, jsonFile, indent=4, ensure_ascii=False)
 
     def update_last_saved(self, new_last_saved):
         with open(self.METADATA_FILE, "r",  encoding='utf8') as jsonFile:
