@@ -37,6 +37,7 @@ class JikanAPI:
             self.update_last_saved(page)
 
             self._log(f"{page}/{self.last_visible_page} pages done")
+            self._log("============================================")
 
     def extend_character_list(self, new_character_list):
         self.mongo.insert_character_list(new_character_list)
