@@ -6,8 +6,6 @@ load_dotenv()
 
 if __name__ == "__main__":
     print("Running main...")
-    m = MongoAPI()
-    j = JikanAPI(mongo=m)
-    # j.run_print()
+    mongo = MongoAPI()
+    j = JikanAPI(mongo=mongo)
     j.get_all_characters()
-
