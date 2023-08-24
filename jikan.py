@@ -38,13 +38,6 @@ class JikanAPI:
 
     def extend_character_list(self, new_character_list):
         self.mongo.insert_character_list(new_character_list)
-        # with open(self.CHARACTERS_LIST_FILE, "r", encoding='utf8') as jsonFile:
-        #     characters_list = json.load(jsonFile)
-        #
-        # characters_list.extend(new_characters_list)
-        #
-        # with open(self.CHARACTERS_LIST_FILE, "w",  encoding='utf8') as jsonFile:
-        #     json.dump(characters_list, jsonFile, indent=4, ensure_ascii=False)
 
     def update_last_saved(self, new_last_saved):
         with open(self.METADATA_FILE, "r",  encoding='utf8') as jsonFile:

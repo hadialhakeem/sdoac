@@ -1,11 +1,15 @@
+import os
+import certifi
+
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
-import os
 
 
 class MongoAPI:
     def __init__(self):
-        self.client = MongoClient(os.environ["MONGODB_CONNECTION"], server_api=ServerApi('1'))
+        self.client = MongoClient(os.environ["MONGODB_CONNECTION"],
+                                  server_api=ServerApi('1'),
+                                  tlsCAFile=certifi.where())
         self.db = self.client.main
 
         self.character_list = self.db.character_list
