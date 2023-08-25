@@ -22,11 +22,21 @@ class MongoAPI:
     def insert_character_full(self, new_character):
         self.character_full.insert_one(new_character)
 
-    def get_character_list_by_favourites(self):
-        return self.character_list.find().sort("favorites", pymongo.DESCENDING)
+    def get_character_list_after_last_full_inserted(self):
+        last_inserted = self.get_last_character_full_inserted()
+        q_filter = {}
+
+        if last_inserted:
+            q_filter = {
+                "mal_id": {
+                    "$gt": last_inserted["mal_id"]
+                }
+            }
+
+        return self.character_list.find(q_filter, sort=[("_id", pymongo.ASCENDING)])
 
     def get_last_character_full_inserted(self):
         try:
-            return self.character_full.find().sort("_id", pymongo.DESCENDING).limit(1)[0]
+            return self.character_full.find(sort=[("_id", pymongo.DESCENDING)], limit=1)[0]
         except Exception:
             return None
