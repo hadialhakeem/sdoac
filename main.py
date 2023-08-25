@@ -8,4 +8,4 @@ if __name__ == "__main__":
     print("Running main...")
     mongo = MongoAPI()
     j = JikanAPI(mongo=mongo)
-    j.get_all_characters()
+    j.get_all_characters_fully()
