@@ -46,15 +46,15 @@ class JikanAPI:
         characters_incomplete = self.mongo.get_character_list_after_last_full_inserted()
         counter = 0
         for character in characters_incomplete:
+            self.wait_after_request()
             counter += 1
             mal_id = character["mal_id"]
             self.get_character_full(mal_id)
-            self.wait_after_request()
             self._log(f"Character #{counter} inserted.")
             self._log("============================================")
 
     def get_character_full(self, character_mal_id):
-        self._log(f"COMMENCING get_character {character_mal_id}")
+        self._log(f"get_character for id: {character_mal_id}")
 
         req_url = self.CHARACTER_FULL_DETAILS_URL.format(id=character_mal_id)
         res = self.send_request_and_retry(req_url)
@@ -62,7 +62,7 @@ class JikanAPI:
         character_data = res_json["data"]
         self.save_character(character_data)
 
-        self._log(f"Character {character_mal_id} retrieved.")
+        self._log(f"Character id:{character_mal_id} retrieved.")
 
     def save_character(self, character_data):
         self.mongo.insert_character_full(character_data)
