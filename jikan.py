@@ -42,13 +42,27 @@ class JikanAPI:
 
     def get_all_characters_fully(self):
         self._log("COMMENCING get_all_characters_fully")
+
+        last_inserted = self.mongo.get_last_character_full_inserted()
+
+        has_reached_last_inserted = False
+        if not last_inserted:
+            has_reached_last_inserted = True
+
         characters_incomplete = self.mongo.get_character_list_by_favourites()
         counter = 0
         for character in characters_incomplete:
+            counter += 1
             mal_id = character["mal_id"]
+            if mal_id == last_inserted["mal_id"]:
+                has_reached_last_inserted = True
+                continue
+
+            if not has_reached_last_inserted:
+                continue
+
             self.get_character_full(mal_id)
             self.wait_after_request()
-            counter += 1
             self._log(f"Character #{counter} inserted.")
             self._log("============================================")
 

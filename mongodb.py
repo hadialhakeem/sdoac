@@ -24,3 +24,9 @@ class MongoAPI:
 
     def get_character_list_by_favourites(self):
         return self.character_list.find().sort("favorites", pymongo.DESCENDING)
+
+    def get_last_character_full_inserted(self):
+        try:
+            return self.character_full.find().sort("_id", pymongo.DESCENDING).limit(1)[0]
+        except Exception:
+            return None
