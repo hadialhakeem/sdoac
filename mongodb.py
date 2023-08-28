@@ -8,13 +8,16 @@ from pymongo.server_api import ServerApi
 
 class MongoAPI:
     def __init__(self):
-        self.client = MongoClient(os.environ["MONGODB_CONNECTION"],
-                                  server_api=ServerApi('1'),
-                                  tlsCAFile=certifi.where())
-        self.db = self.client.main
+        self.client_atlas = MongoClient(os.environ["MONGODB_CONNECTION_ATLAS"],
+                                        server_api=ServerApi('1'),
+                                        tlsCAFile=certifi.where())
+        self.client_local = MongoClient(os.environ["MONGODB_CONNECTION_LOCAL"])
 
-        self.character_list = self.db.character_list
-        self.character_full = self.db.character_full
+        self.db_atlas = self.client_atlas.main
+        self.db_local = self.client_local.sdoac
+
+        self.character_list = self.db_local.character_list
+        self.character_full = self.db_local.character_full
 
     def insert_character_list(self, new_characters):
         self.character_list.insert_many(new_characters)
@@ -36,7 +39,5 @@ class MongoAPI:
         return self.character_list.find(q_filter, sort=[("_id", pymongo.ASCENDING)])
 
     def get_last_character_full_inserted(self):
-        try:
-            return self.character_full.find(sort=[("_id", pymongo.DESCENDING)], limit=1)[0]
-        except Exception:
-            return None
+        return self.character_full.find(sort=[("_id", pymongo.DESCENDING)], limit=1)[0]
+
