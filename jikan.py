@@ -10,7 +10,7 @@ class JikanAPI:
     BASE_URL = "https://api.jikan.moe/v4"
     CHARACTER_SEARCH_URL = f"{BASE_URL}/characters"
     CHARACTER_FULL_DETAILS_URL = BASE_URL + "/characters/{id}/full"
-    REQUEST_DELAY = 3  # Seconds
+    REQUEST_DELAY = 5  # Seconds
 
     DATA_DIR = "data"
     METADATA_FILE = f"{DATA_DIR}/metadata.json"
