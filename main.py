@@ -1,3 +1,4 @@
+import sys
 import time
 
 from jikan import JikanAPI
@@ -27,4 +28,5 @@ if __name__ == "__main__":
             delay = script_retry_delays[i]
             print(f"Attempt {attempt_num} failed, retrying after {delay} seconds")
             print(f"exception: {str(e)}")
+            sys.stdout.flush()
             time.sleep(delay)
