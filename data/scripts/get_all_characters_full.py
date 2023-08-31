@@ -1,9 +1,9 @@
 import sys
 import time
 
-from jikan import JikanAPI
-from mongodb import MongoAPI
+from data.jikan import JikanAPI
 from dotenv import load_dotenv
+from data.mongodb import MongoAPI
 
 load_dotenv()
 

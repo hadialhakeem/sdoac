@@ -10,9 +10,9 @@ class JikanAPI:
     BASE_URL = "https://api.jikan.moe/v4"
     CHARACTER_SEARCH_URL = f"{BASE_URL}/characters"
     CHARACTER_FULL_DETAILS_URL = BASE_URL + "/characters/{id}/full"
-    REQUEST_DELAY = 5  # Seconds
+    REQUEST_DELAY = 3  # Seconds
 
-    DATA_DIR = "data"
+    DATA_DIR = ""
     METADATA_FILE = f"{DATA_DIR}/metadata.json"
 
     def __init__(self, mongo: MongoAPI):
