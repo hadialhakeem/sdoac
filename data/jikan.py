@@ -12,8 +12,7 @@ class JikanAPI:
     CHARACTER_FULL_DETAILS_URL = BASE_URL + "/characters/{id}/full"
     REQUEST_DELAY = 3  # Seconds
 
-    DATA_DIR = ""
-    METADATA_FILE = f"{DATA_DIR}/metadata.json"
+    METADATA_FILE = f"data/metadata.json"
 
     def __init__(self, mongo: MongoAPI):
         self.mongo = mongo
