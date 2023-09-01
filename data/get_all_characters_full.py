@@ -14,7 +14,7 @@ if __name__ == "__main__":
     j = JikanAPI(mongo=mongo)
 
     max_attempts = 5
-    script_retry_delays = [60, 120, 300, 600]
+    script_retry_delays = [120, 300, 600, 1200]
     for i in range(max_attempts):
         try:
             j.get_all_characters_fully()
