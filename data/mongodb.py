@@ -19,11 +19,16 @@ class MongoAPI:
         self.character_list = self.db_local.character_list
         self.character_full = self.db_local.character_full
 
+        self.ANIME_ONLY_FILTER = {"anime": {"$not": {"$eq": []}}}
+
     def insert_character_list(self, new_characters):
         self.character_list.insert_many(new_characters)
 
     def insert_character_full(self, new_character):
         self.character_full.insert_one(new_character)
+
+    def insert_persons(self, new_persons):
+        self.db_local.person.insert_many(new_persons)
 
     def get_character_list_after_last_full_inserted(self):
         last_inserted = self.get_last_character_full_inserted()
@@ -41,3 +46,5 @@ class MongoAPI:
     def get_last_character_full_inserted(self):
         return self.character_full.find(sort=[("_id", pymongo.DESCENDING)], limit=1)[0]
 
+    def get_anime_character_full_sorted_favorites(self, limit=0):
+        return self.character_full.find(self.ANIME_ONLY_FILTER).sort("favorites", pymongo.DESCENDING).limit(limit)

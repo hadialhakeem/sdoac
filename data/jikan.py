@@ -10,7 +10,10 @@ class JikanAPI:
     BASE_URL = "https://api.jikan.moe/v4"
     CHARACTER_SEARCH_URL = f"{BASE_URL}/characters"
     CHARACTER_FULL_DETAILS_URL = BASE_URL + "/characters/{id}/full"
-    REQUEST_DELAY = 3  # Seconds
+    PERSON_SEARCH_URL = BASE_URL + "/people"
+    ANIME_SEARCH_URL = BASE_URL + "/anime"
+
+    REQUEST_DELAY = 2  # Seconds
 
     METADATA_FILE = f"data/metadata.json"
 
@@ -19,6 +22,7 @@ class JikanAPI:
 
         with open(self.METADATA_FILE, "r") as jsonFile:
             meta = json.load(jsonFile)
+        self.meta = meta
         self.last_page_saved = meta["characters_search"]["last_page_saved"]
         self.last_visible_page = meta["characters_search"]["last_visible_page"]
         self.list_only_ids = meta["list_only_ids"]
@@ -34,8 +38,8 @@ class JikanAPI:
             res = self.send_request_and_retry(self.CHARACTER_SEARCH_URL, True, params)
             res_json = res.json()
             res_character_list = res_json["data"]
-            self.extend_character_list(res_character_list)
-            self.update_last_saved(page)
+            self.mongo.insert_character_list(res_character_list)
+            self.update_last_saved(page, "characters_search")
 
             self._log(f"{page}/{self.last_visible_page} pages done")
             self._log("============================================")
@@ -73,21 +77,37 @@ class JikanAPI:
         if "data" not in res_json:
             self._log(f"res_json:{res_json}")
         character_data = res_json["data"]
-        self.save_character(character_data)
+        self.mongo.insert_character_full(character_data)
 
         self._log(f"Character id:{character_mal_id} retrieved.")
 
-    def save_character(self, character_data):
-        self.mongo.insert_character_full(character_data)
+    def get_all_persons(self):
+        self._log("COMMENCING get_all_persons")
 
-    def extend_character_list(self, new_character_list):
-        self.mongo.insert_character_list(new_character_list)
+        last_page_saved = self.meta["person_search"]["last_page_saved"]
+        last_visible_page = self.meta["person_search"]["last_visible_page"]
 
-    def update_last_saved(self, new_last_saved):
+        for page in range(last_page_saved + 1, last_visible_page + 1):
+            self.wait_after_request()
+            params = {
+                "page": page
+            }
+            self._log(f"sending request for page: {page}")
+            res = self.send_request_and_retry(self.PERSON_SEARCH_URL, True, params)
+            res_json = res.json()
+            res_person_list = res_json["data"]
+
+            self.mongo.insert_persons(res_person_list)
+            self.update_last_saved(page, "person_search")
+
+            self._log(f"{page}/{last_visible_page} pages done")
+            self._log("============================================")
+
+    def update_last_saved(self, new_last_saved, namespace):
         with open(self.METADATA_FILE, "r", encoding='utf8') as jsonFile:
             metadata = json.load(jsonFile)
 
-        metadata["characters_search"]["last_page_saved"] = new_last_saved
+        metadata[namespace]["last_page_saved"] = new_last_saved
 
         with open(self.METADATA_FILE, "w", encoding='utf8') as jsonFile:
             json.dump(metadata, jsonFile, indent=4, ensure_ascii=False)

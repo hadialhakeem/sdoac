@@ -17,7 +17,7 @@ if __name__ == "__main__":
     script_retry_delays = [120, 300, 600, 1200]
     for i in range(max_attempts):
         try:
-            j.get_all_characters_fully()
+            j.get_all_persons()
             break
         except Exception as e:
             attempt_num = i + 1
