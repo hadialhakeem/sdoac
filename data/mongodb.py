@@ -30,6 +30,9 @@ class MongoAPI:
     def insert_persons(self, new_persons):
         self.db_local.person.insert_many(new_persons)
 
+    def insert_animes(self, new_animes):
+        self.db_local.anime.insert_many(new_animes)
+
     def get_character_list_after_last_full_inserted(self):
         last_inserted = self.get_last_character_full_inserted()
         q_filter = {}

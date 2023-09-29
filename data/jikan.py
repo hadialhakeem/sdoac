@@ -103,6 +103,28 @@ class JikanAPI:
             self._log(f"{page}/{last_visible_page} pages done")
             self._log("============================================")
 
+    def get_all_anime(self):
+        self._log("COMMENCING get_all_anime")
+
+        last_page_saved = self.meta["anime_search"]["last_page_saved"]
+        last_visible_page = self.meta["anime_search"]["last_visible_page"]
+
+        for page in range(last_page_saved + 1, last_visible_page + 1):
+            self.wait_after_request()
+            params = {
+                "page": page
+            }
+            self._log(f"sending request for page: {page}")
+            res = self.send_request_and_retry(self.ANIME_SEARCH_URL, True, params)
+            res_json = res.json()
+            res_anime_list = res_json["data"]
+
+            self.mongo.insert_animes(res_anime_list)
+            self.update_last_saved(page, "anime_search")
+
+            self._log(f"{page}/{last_visible_page} pages done")
+            self._log("============================================")
+
     def update_last_saved(self, new_last_saved, namespace):
         with open(self.METADATA_FILE, "r", encoding='utf8') as jsonFile:
             metadata = json.load(jsonFile)
