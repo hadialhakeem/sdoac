@@ -11,6 +11,7 @@ class JikanAPI:
     CHARACTER_SEARCH_URL = f"{BASE_URL}/characters"
     CHARACTER_FULL_DETAILS_URL = BASE_URL + "/characters/{id}/full"
     PERSON_SEARCH_URL = BASE_URL + "/people"
+    PERSON_DETAILS_URL = BASE_URL + "/people/{}"
     ANIME_SEARCH_URL = BASE_URL + "/anime"
 
     REQUEST_DELAY = 2  # Seconds
@@ -80,6 +81,27 @@ class JikanAPI:
         self.mongo.insert_character_full(character_data)
 
         self._log(f"Character id:{character_mal_id} retrieved.")
+
+    def get_person_details(self, person_mal_id):
+        self._log(f"Get person for id: {person_mal_id}")
+
+        req_url = self.PERSON_DETAILS_URL.format(person_mal_id)
+        res = self.send_request_and_retry(req_url, False)
+        res_json = res.json()
+
+        if res.status_code == 404 and res_json["type"] == "BadResponseException" and \
+                res_json["message"] == "Resource does not exist":
+            self._log(f"person id {person_mal_id} does not exist on mal. Skipping.")
+            return
+
+        res.raise_for_status()
+
+        if "data" not in res_json:
+            self._log(f"res_json:{res_json}")
+        person_data = res_json["data"]
+        self.mongo.insert_persons([person_data])
+
+        self._log(f"person id:{person_mal_id} retrieved.")
 
     def get_all_persons(self):
         self._log("COMMENCING get_all_persons")
@@ -181,6 +203,15 @@ class JikanAPI:
                 res.raise_for_status()
 
         return res
+
+    def get_persons_from_id_list(self, p_id_list):
+        counter = 0
+        for p_id in p_id_list:
+            self.get_person_details(p_id)
+            counter += 1
+            self._log(f"Person #{counter} inserted.")
+            self._log("============================================")
+            self.wait_after_request()
 
     @staticmethod
     def _log(arg):
