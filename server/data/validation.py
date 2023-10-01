@@ -59,8 +59,18 @@ def validate():
         anime_rels += num_animes
         nodes += 1
 
+    animes = mongo.get_all_anime()
+    db_mal_ids = [anime["mal_id"] for anime in animes]
+    db_mal_ids = set(db_mal_ids)
+
+    discrepancy = []
+    for anime_id in anime_mal_ids:
+        if anime_id not in db_mal_ids:
+            discrepancy.append(anime_id)
+
+    print(f"In character but not in anime db: {discrepancy}")
+    print(f"DB Mal IDS: {len(db_mal_ids)}")
     print(f"animes in character set: {len(anime_mal_ids)}")
-    print(f"animes in mongodb: 25359")
     print(f"Rels: {rels}")
     print(f"HAS_CHARACTER: {anime_rels}")
     print(f"VOICES: {voice_rels}")

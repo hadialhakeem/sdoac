@@ -55,9 +55,6 @@ class MongoAPI:
     def get_all_anime(self):
         return self.db_local.anime.find({})
 
-    def get_anime_filtered(self, filter):
-        return self.db_local.anime.find(filter).sort("favorites", pymongo.DESCENDING).limit(100)
-
     def get_voice_actors(self):
         va_mal_ids = set()
         characters = self.get_anime_character_full_sorted_favorites()

@@ -12,52 +12,52 @@ AUTH = (os.environ["NEO_USERNAME"], os.environ["NEO_PASSWORD"])
 
 def migrate(max_count=100):
     mongo = MongoAPI()
-    # persons = mongo.get_voice_actors()
+    persons = mongo.get_voice_actors()
 
     with GraphDatabase.driver(URI, auth=AUTH) as driver:
         driver.verify_connectivity()
 
-        # l= mongo.get_all_anime()
-        # count = 0
-        # for anime in animes:
-        #     if anime["titles"][0]["type"] != "Default":
-        #         print(f"First anime title is not default for mal_id {anime['mal_id']}")
-        #
-        #     titles = [title_info["title"] for title_info in anime["titles"]]
-        #     parameters = {
-        #         "anime": {
-        #             "mal_id": anime["mal_id"],
-        #             "mal_url": anime["url"],
-        #             "img_url": anime["images"]["jpg"]["image_url"],
-        #             "approved": anime["approved"],
-        #             "titles": titles,
-        #             "title_default": titles[0],
-        #             "type": anime["type"],
-        #             "source": anime["source"],
-        #             "episodes": anime["episodes"],
-        #             "status": anime["status"],
-        #             "airing": anime["airing"],
-        #             "duration": anime["duration"],
-        #             "rating": anime["rating"],
-        #             "score": anime["score"],
-        #             "scored_by": anime["scored_by"],
-        #             "rank": anime["rank"],
-        #             "popularity": anime["popularity"],
-        #             "members": anime["members"],
-        #             "favorites": anime["favorites"],
-        #             "synopsis": anime["synopsis"],
-        #             "background": anime["background"],
-        #             "season": anime["season"],
-        #             "year": anime["year"],
-        #         }
-        #     }
-        #     driver.execute_query(
-        #         "CREATE (:Anime $anime);",
-        #         parameters_=parameters,
-        #         database_="neo4j",
-        #     )
-        #     count += 1
-        #     print(f"Created anime: {count}")
+        l= mongo.get_all_anime()
+        count = 0
+        for anime in animes:
+            if anime["titles"][0]["type"] != "Default":
+                print(f"First anime title is not default for mal_id {anime['mal_id']}")
+
+            titles = [title_info["title"] for title_info in anime["titles"]]
+            parameters = {
+                "anime": {
+                    "mal_id": anime["mal_id"],
+                    "mal_url": anime["url"],
+                    "img_url": anime["images"]["jpg"]["image_url"],
+                    "approved": anime["approved"],
+                    "titles": titles,
+                    "title_default": titles[0],
+                    "type": anime["type"],
+                    "source": anime["source"],
+                    "episodes": anime["episodes"],
+                    "status": anime["status"],
+                    "airing": anime["airing"],
+                    "duration": anime["duration"],
+                    "rating": anime["rating"],
+                    "score": anime["score"],
+                    "scored_by": anime["scored_by"],
+                    "rank": anime["rank"],
+                    "popularity": anime["popularity"],
+                    "members": anime["members"],
+                    "favorites": anime["favorites"],
+                    "synopsis": anime["synopsis"],
+                    "background": anime["background"],
+                    "season": anime["season"],
+                    "year": anime["year"],
+                }
+            }
+            driver.execute_query(
+                "CREATE (:Anime $anime);",
+                parameters_=parameters,
+                database_="neo4j",
+            )
+            count += 1
+            print(f"Created anime: {count}")
 
         characters = mongo.get_anime_character_full_sorted_favorites(max_count)
         characters = [ch for ch in characters]
