@@ -3,8 +3,8 @@ import time
 
 from dotenv import load_dotenv
 
-from jikan import JikanAPI
-from mongodb import MongoAPI
+from apis.jikan import JikanAPI
+from apis.mongodb import MongoAPI
 
 load_dotenv()
 

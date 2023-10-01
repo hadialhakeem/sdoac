@@ -131,5 +131,7 @@ class NeoAPI:
                 database_="neo4j",
             )
 
+        print(f"Created Relationships for Character: {character_json['mal_id']}")
+
     def close(self):
         self.driver.close()

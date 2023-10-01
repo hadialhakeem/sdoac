@@ -3,7 +3,7 @@ import requests
 import json
 import sys
 
-from mongodb import MongoAPI
+from apis.mongodb import MongoAPI
 
 
 class JikanAPI:

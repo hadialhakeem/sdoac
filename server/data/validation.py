@@ -1,5 +1,4 @@
-from mongodb import MongoAPI
-from jikan import JikanAPI
+from apis.mongodb import MongoAPI
 from dotenv import load_dotenv
 
 load_dotenv()

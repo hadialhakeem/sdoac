@@ -1,6 +1,6 @@
 import os
 
-from mongodb import MongoAPI
+from apis.mongodb import MongoAPI
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 
