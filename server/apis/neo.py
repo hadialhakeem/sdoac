@@ -1,6 +1,10 @@
 import os
 
+from dotenv import load_dotenv
 from neo4j import GraphDatabase
+
+
+load_dotenv()
 
 
 class NeoAPI:
@@ -112,7 +116,7 @@ class NeoAPI:
             }
             self.driver.execute_query(
                 "MATCH (ch:Character {mal_id: $ch_mal_id}), (person:Person {mal_id: $person_mal_id}) "
-                "CREATE (person)-[:VOICES {language: $language}]->(ch);",
+                "MERGE (person)-[:VOICES {language: $language}]->(ch);",
                 parameters_=parameters,
                 database_="neo4j",
             )
@@ -126,7 +130,7 @@ class NeoAPI:
             }
             self.driver.execute_query(
                 "MATCH (ch:Character {mal_id: $ch_mal_id}), (anime:Anime {mal_id: $anime_mal_id}) "
-                "CREATE (anime)-[:HAS_CHARACTER {role: $role}]->(ch);",
+                "MERGE (anime)-[:HAS_CHARACTER {role: $role}]->(ch);",
                 parameters_=parameters,
                 database_="neo4j",
             )

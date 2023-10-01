@@ -3,20 +3,32 @@ import requests
 import json
 import sys
 
+from enum import Enum
 from apis.mongodb import MongoAPI
+
+
+class Resource(Enum):
+    CHARACTER = "character"
+    PERSON = "person"
+    ANIME = "anime"
+
+    def __str__(self):
+        return self.value
 
 
 class JikanAPI:
     BASE_URL = "https://api.jikan.moe/v4"
     CHARACTER_SEARCH_URL = f"{BASE_URL}/characters"
-    CHARACTER_FULL_DETAILS_URL = BASE_URL + "/characters/{id}/full"
     PERSON_SEARCH_URL = BASE_URL + "/people"
-    PERSON_DETAILS_URL = BASE_URL + "/people/{}"
     ANIME_SEARCH_URL = BASE_URL + "/anime"
+
+    CHARACTER_FULL_DETAILS_URL = BASE_URL + "/characters/{id}/full"
+    PERSON_DETAILS_URL = BASE_URL + "/people/{}"
+    ANIME_DETAILS_URL = BASE_URL + "/anime/{}"
 
     REQUEST_DELAY = 2  # Seconds
 
-    METADATA_FILE = f"data/metadata.json"
+    METADATA_FILE = "H:/six-degrees-of-anime-characters/server/apis/meta/metadata.json"
 
     def __init__(self, mongo: MongoAPI):
         self.mongo = mongo
@@ -24,36 +36,47 @@ class JikanAPI:
         with open(self.METADATA_FILE, "r") as jsonFile:
             meta = json.load(jsonFile)
         self.meta = meta
-        self.last_page_saved = meta["characters_search"]["last_page_saved"]
-        self.last_visible_page = meta["characters_search"]["last_visible_page"]
-        self.list_only_ids = meta["list_only_ids"]
 
-    def get_all_characters(self):
-        self._log("COMMENCING get_all_characters")
-        for page in range(self.last_page_saved + 1, self.last_visible_page + 1):
+    def get_all_for_resource(self, resource: Resource):
+        self._log(f"get_all_resource for resource {resource}")
+        resource_to_url_map = {
+            Resource.CHARACTER: self.CHARACTER_SEARCH_URL,
+            Resource.PERSON: self.PERSON_SEARCH_URL,
+            Resource.ANIME: self.ANIME_SEARCH_URL,
+        }
+        resource_to_mongo_insert_map = {
+            Resource.CHARACTER: self.mongo.insert_character_list,
+            Resource.PERSON: self.mongo.insert_persons,
+            Resource.ANIME: self.mongo.insert_animes,
+        }
+        request_url = resource_to_url_map[resource]
+
+        last_page_saved = self.meta[resource.value]["last_page_saved"]
+        last_visible_page = self.meta[resource.value]["last_visible_page"]
+
+        for page in range(last_page_saved + 1, last_visible_page + 1):
             self.wait_after_request()
             params = {
                 "page": page
             }
             self._log(f"sending request for page: {page}")
-            res = self.send_request_and_retry(self.CHARACTER_SEARCH_URL, True, params)
+            res = self.send_request_and_retry(request_url, True, params)
             res_json = res.json()
-            res_character_list = res_json["data"]
-            self.mongo.insert_character_list(res_character_list)
-            self.update_last_saved(page, "characters_search")
+            res_data = res_json["data"]
 
-            self._log(f"{page}/{self.last_visible_page} pages done")
+            resource_to_mongo_insert_map[resource](res_data)
+            self.update_last_saved(page, resource.value)
+
+            self._log(f"{page}/{last_visible_page} pages done")
             self._log("============================================")
 
     def get_all_characters_fully(self):
-        self._log("COMMENCING get_all_characters_fully")
+        self._log("get_all_characters_fully")
 
         characters_incomplete = self.mongo.get_character_list_after_last_full_inserted()
         counter = 0
         for character in characters_incomplete:
             mal_id = character["mal_id"]
-            if mal_id in self.list_only_ids:
-                continue
             self.get_character_full(mal_id)
             counter += 1
             self._log(f"Character #{counter} inserted.")
@@ -70,7 +93,6 @@ class JikanAPI:
         if res.status_code == 404 and res_json["type"] == "BadResponseException" and \
                 res_json["message"] == "Resource does not exist":
             self._log(f"Character id {character_mal_id} does not exist on mal. Skipping.")
-            self.add_list_only_id(character_mal_id)
             return
 
         res.raise_for_status()
@@ -82,85 +104,41 @@ class JikanAPI:
 
         self._log(f"Character id:{character_mal_id} retrieved.")
 
-    def get_person_details(self, person_mal_id):
-        self._log(f"Get person for id: {person_mal_id}")
+    def get_resource_details(self, mal_id, resource: Resource):
+        self._log(f"Get Resource Details for mal_id: {mal_id}, resource: {resource}")
+        resource_to_url_map = {
+            Resource.PERSON: self.PERSON_DETAILS_URL,
+            Resource.ANIME: self.ANIME_DETAILS_URL,
+        }
+        resource_to_mongo_insert_map = {
+            Resource.PERSON: self.mongo.insert_persons,
+            Resource.ANIME: self.mongo.insert_animes
+        }
 
-        req_url = self.PERSON_DETAILS_URL.format(person_mal_id)
+        req_url = resource_to_url_map[resource].format(mal_id)
         res = self.send_request_and_retry(req_url, False)
         res_json = res.json()
 
         if res.status_code == 404 and res_json["type"] == "BadResponseException" and \
                 res_json["message"] == "Resource does not exist":
-            self._log(f"person id {person_mal_id} does not exist on mal. Skipping.")
+            self._log(f"Resource id {mal_id} does not exist on MAL. Skipping.")
             return
 
         res.raise_for_status()
 
         if "data" not in res_json:
             self._log(f"res_json:{res_json}")
-        person_data = res_json["data"]
-        self.mongo.insert_persons([person_data])
 
-        self._log(f"person id:{person_mal_id} retrieved.")
+        resource_data = res_json["data"]
+        resource_to_mongo_insert_map[resource]([resource_data])
 
-    def get_all_persons(self):
-        self._log("COMMENCING get_all_persons")
-
-        last_page_saved = self.meta["person_search"]["last_page_saved"]
-        last_visible_page = self.meta["person_search"]["last_visible_page"]
-
-        for page in range(last_page_saved + 1, last_visible_page + 1):
-            self.wait_after_request()
-            params = {
-                "page": page
-            }
-            self._log(f"sending request for page: {page}")
-            res = self.send_request_and_retry(self.PERSON_SEARCH_URL, True, params)
-            res_json = res.json()
-            res_person_list = res_json["data"]
-
-            self.mongo.insert_persons(res_person_list)
-            self.update_last_saved(page, "person_search")
-
-            self._log(f"{page}/{last_visible_page} pages done")
-            self._log("============================================")
-
-    def get_all_anime(self):
-        self._log("COMMENCING get_all_anime")
-
-        last_page_saved = self.meta["anime_search"]["last_page_saved"]
-        last_visible_page = self.meta["anime_search"]["last_visible_page"]
-
-        for page in range(last_page_saved + 1, last_visible_page + 1):
-            self.wait_after_request()
-            params = {
-                "page": page
-            }
-            self._log(f"sending request for page: {page}")
-            res = self.send_request_and_retry(self.ANIME_SEARCH_URL, True, params)
-            res_json = res.json()
-            res_anime_list = res_json["data"]
-
-            self.mongo.insert_animes(res_anime_list)
-            self.update_last_saved(page, "anime_search")
-
-            self._log(f"{page}/{last_visible_page} pages done")
-            self._log("============================================")
+        self._log(f"Resource id:{mal_id} retrieved.")
 
     def update_last_saved(self, new_last_saved, namespace):
         with open(self.METADATA_FILE, "r", encoding='utf8') as jsonFile:
             metadata = json.load(jsonFile)
 
         metadata[namespace]["last_page_saved"] = new_last_saved
-
-        with open(self.METADATA_FILE, "w", encoding='utf8') as jsonFile:
-            json.dump(metadata, jsonFile, indent=4, ensure_ascii=False)
-
-    def add_list_only_id(self, new_id):
-        with open(self.METADATA_FILE, "r", encoding='utf8') as jsonFile:
-            metadata = json.load(jsonFile)
-
-        metadata["list_only_ids"].append(new_id)
 
         with open(self.METADATA_FILE, "w", encoding='utf8') as jsonFile:
             json.dump(metadata, jsonFile, indent=4, ensure_ascii=False)
@@ -204,12 +182,12 @@ class JikanAPI:
 
         return res
 
-    def get_persons_from_id_list(self, p_id_list):
+    def get_resources_from_id_list(self, mal_id_list, resource: Resource):
         counter = 0
-        for p_id in p_id_list:
-            self.get_person_details(p_id)
+        for mal_id in mal_id_list:
+            self.get_resource_details(mal_id, resource)
             counter += 1
-            self._log(f"Person #{counter} inserted.")
+            self._log(f"Resource #{counter} inserted.")
             self._log("============================================")
             self.wait_after_request()
 

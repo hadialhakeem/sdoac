@@ -49,15 +49,15 @@ class MongoAPI:
     def get_last_character_full_inserted(self):
         return self.character_full.find(sort=[("_id", pymongo.DESCENDING)], limit=1)[0]
 
-    def get_anime_character_full_sorted_favorites(self, limit=0):
+    def get_character_full_sorted_favorites(self, limit=0):
         return self.character_full.find(self.ANIME_ONLY_FILTER).sort("favorites", pymongo.DESCENDING).limit(limit)
 
     def get_all_anime(self):
         return self.db_local.anime.find({})
 
-    def get_voice_actors(self):
+    def get_persons_voice_actors(self):
         va_mal_ids = set()
-        characters = self.get_anime_character_full_sorted_favorites()
+        characters = self.get_character_full_sorted_favorites()
         for character in characters:
             persons = [va for va in character["voices"] if va["language"] == "Japanese"]
             for person in persons:
@@ -66,13 +66,9 @@ class MongoAPI:
         print(f"Unique VAs: {len(va_mal_ids)}")
         return self.db_local.person.find({"mal_id": {"$in": list(va_mal_ids)}})
 
-    def delete_many_mongo_ids_from_collection(self, collection, mongo_ids):
-        self.db_local[collection].delete_many({
-            "_id": {"$in": mongo_ids}
-        })
+    def get_animes_in_mal_id_list(self, mal_ids):
+        return self.db_local.anime.find({"mal_id": {"$in": mal_ids}})
 
-    def get_persons_in_mal_id_list(self, mal_ids_input):
-        return self.db_local.person.find({"mal_id": {"$in": mal_ids_input}})
-
-
+    def get_character_full(self, mal_id):
+        return self.character_full.find_one({"mal_id": mal_id})
 

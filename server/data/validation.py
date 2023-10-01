@@ -1,4 +1,4 @@
-from apis.mongodb import MongoAPI
+import apis.mongodb as mongodb
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -20,9 +20,9 @@ def validate_mal_id_for_collection(collection, collection_name):
 
 
 def validate():
-    mongo = MongoAPI()
-    characters = mongo.get_anime_character_full_sorted_favorites()
-    vas = mongo.get_voice_actors()
+    mongo = mongodb.MongoAPI()
+    characters = mongo.get_character_full_sorted_favorites()
+    vas = mongo.get_persons_voice_actors()
     animes = mongo.get_all_anime()
 
     del_ch = validate_mal_id_for_collection(characters, "character_full")
@@ -33,7 +33,7 @@ def validate():
     # mongo.delete_many_mongo_ids_from_collection("person", del_p)
     # mongo.delete_many_mongo_ids_from_collection("anime", del_an)
 
-    characters = mongo.get_anime_character_full_sorted_favorites()
+    characters = mongo.get_character_full_sorted_favorites()
 
     rels = 0
     nodes = 0
