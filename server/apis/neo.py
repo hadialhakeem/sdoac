@@ -12,8 +12,21 @@ class NeoAPI:
     AUTH = (os.environ["NEO_USERNAME"], os.environ["NEO_PASSWORD"])
 
     def __init__(self):
+        self.driver = None
+
+    def connect(self):
+        print("Connecting to neo4j")
         self.driver = GraphDatabase.driver(self.URI, auth=self.AUTH)
         self.driver.verify_connectivity()
+        return self.driver
+
+    def get_db(self):
+        if not self.driver:
+            return self.connect()
+        return self.driver
+
+    def close(self):
+        self.driver.close()
 
     def create_person(self, person_json):
         parameters = {
@@ -136,6 +149,3 @@ class NeoAPI:
             )
 
         print(f"Created Relationships for Character: {character_json['mal_id']}")
-
-    def close(self):
-        self.driver.close()
