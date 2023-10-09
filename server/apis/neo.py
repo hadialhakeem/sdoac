@@ -2,9 +2,26 @@ import os
 
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
-
+from enum import Enum
 
 load_dotenv()
+
+
+class NodeLabel(Enum):
+    CHARACTER = "Character"
+    PERSON = "Person"
+    ANIME = "Anime"
+
+    def __str__(self):
+        return self.value
+
+
+class RelationshipType(Enum):
+    HAS_CHARACTER = "HAS_CHARACTER"
+    VOICES = "VOICES"
+
+    def __str__(self):
+        return self.value
 
 
 class NeoAPI:
@@ -12,21 +29,38 @@ class NeoAPI:
     AUTH = (os.environ["NEO_USERNAME"], os.environ["NEO_PASSWORD"])
 
     def __init__(self):
-        self.driver = None
-
-    def connect(self):
-        print("Connecting to neo4j")
+        print("==============Connecting to neo4j===============")
         self.driver = GraphDatabase.driver(self.URI, auth=self.AUTH)
         self.driver.verify_connectivity()
-        return self.driver
-
-    def get_db(self):
-        if not self.driver:
-            return self.connect()
-        return self.driver
 
     def close(self):
+        print("==============Closing neo4j===============")
         self.driver.close()
+
+    def configure_db(self):
+        """
+        Method to initialize all indexes on the Neo4j DB. Only needs to be run once.
+        Does nothing if ran after the first time.
+        :return:
+        """
+        self.create_mal_id_unique_constraint(NodeLabel.CHARACTER)
+        self.create_mal_id_unique_constraint(NodeLabel.PERSON)
+        self.create_mal_id_unique_constraint(NodeLabel.ANIME)
+        self.create_character_name_full_text_index()
+
+    def create_mal_id_unique_constraint(self, node_label: NodeLabel):
+        self.driver.execute_query(f"CREATE CONSTRAINT {node_label}MalID  IF NOT EXISTS "
+                                  f"FOR (n:{node_label}) REQUIRE n.mal_id IS UNIQUE")
+
+    def create_character_name_full_text_index(self):
+        self.driver.execute_query("CREATE FULLTEXT INDEX CharacterNameIndex IF NOT EXISTS "
+                                  "FOR (n:Character) ON EACH [n.name, n.nicknames] "
+                                  "OPTIONS {indexConfig: {`fulltext.analyzer`: 'simple'}}")
+
+    def search_character_by_name(self, name: str):
+        self.driver.execute_query('CALL db.index.fulltext.queryNodes("CharacterNameIndex", $name) YIELD node, score '
+                                  'RETURN node.mal_id, node.img_url, node.favorites, node.name, score '
+                                  'ORDER BY node.favorites DESC', name=name)
 
     def create_person(self, person_json):
         parameters = {

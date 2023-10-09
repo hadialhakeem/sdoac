@@ -1,35 +1,48 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from extensions import neo4j
+import time
 
-app = Flask(__name__)
-CORS(app)
+from apis.neo import NeoAPI
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Depends
+from pydantic import BaseModel
 
-neo4j.connect()
+from fastapi.middleware.cors import CORSMiddleware
 
-
-@app.route("/")
-def hello():
-    return "Hello World"
+neo = None
 
 
-@app.route("/path", methods=['POST'])
-def generate():
-    data = request.get_json(force=True)
-    title = data['title']
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load the ML model
+    neo = NeoAPI()
+    yield
+    # Clean up the ML models and release the resources
+    neo.close()
 
-    response_dict = {'title': title}
-    return jsonify(response_dict)
+origins = [
+    "http://localhost:8000"
+]
+
+app = FastAPI(lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
-@app.route("/search", methods=['POST'])
-def search():
-    data = request.get_json(force=True)
-    title = data['title']
-
-    response_dict = {'title': title}
-    return jsonify(response_dict)
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
+class PathRequestData(BaseModel):
+    src_id: int
+    dest_id: int
+
+
+@app.post("/path")
+def path(req: PathRequestData):
+    return req
+
