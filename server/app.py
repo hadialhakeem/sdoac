@@ -1,22 +1,24 @@
 import time
 
-from apis.neo import NeoAPI
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends
+
+from dotenv import load_dotenv
+from fastapi import FastAPI
 from pydantic import BaseModel
+from extensions import neo
 
 from fastapi.middleware.cors import CORSMiddleware
 
-neo = None
+
+load_dotenv()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Load the ML model
-    neo = NeoAPI()
+    neo.connect()
     yield
-    # Clean up the ML models and release the resources
     neo.close()
+
 
 origins = [
     "http://localhost:8000"
@@ -44,5 +46,15 @@ class PathRequestData(BaseModel):
 
 @app.post("/path")
 def path(req: PathRequestData):
+    return req
+
+
+class SearchRequestData(BaseModel):
+    character_name: str
+
+
+@app.post("/search")
+def path(req: SearchRequestData):
+    neo.search_character_by_name(req.character_name)
     return req
 

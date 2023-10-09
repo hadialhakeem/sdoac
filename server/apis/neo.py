@@ -29,12 +29,13 @@ class NeoAPI:
     AUTH = (os.environ["NEO_USERNAME"], os.environ["NEO_PASSWORD"])
 
     def __init__(self):
-        print("==============Connecting to neo4j===============")
+        self.driver = None
+
+    def connect(self):
         self.driver = GraphDatabase.driver(self.URI, auth=self.AUTH)
         self.driver.verify_connectivity()
 
     def close(self):
-        print("==============Closing neo4j===============")
         self.driver.close()
 
     def configure_db(self):
@@ -58,9 +59,39 @@ class NeoAPI:
                                   "OPTIONS {indexConfig: {`fulltext.analyzer`: 'simple'}}")
 
     def search_character_by_name(self, name: str):
-        self.driver.execute_query('CALL db.index.fulltext.queryNodes("CharacterNameIndex", $name) YIELD node, score '
-                                  'RETURN node.mal_id, node.img_url, node.favorites, node.name, score '
-                                  'ORDER BY node.favorites DESC', name=name)
+
+        query = self.driver.execute_query('CALL db.index.fulltext.queryNodes("CharacterNameIndex", $name) '
+                                          'YIELD node, score '
+                                          'RETURN node, score '
+                                          'ORDER BY node.favorites DESC', name=name)
+        records, summary, keys = query
+
+        self.log_query(query)
+        return query
+
+    @staticmethod
+    def log_query(query):
+        print("==========")
+        print("QUERY")
+        print(query)
+        print("==========")
+
+        records, summary, keys = query
+
+        print("==========")
+        print("RECORDS")
+        print(records)
+        print("==========")
+
+        print("==========")
+        print("SUMMARY")
+        print(summary)
+        print("==========")
+
+        print("==========")
+        print("KEYS")
+        print(keys)
+        print("==========")
 
     def create_person(self, person_json):
         parameters = {
