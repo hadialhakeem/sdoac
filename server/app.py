@@ -41,7 +41,7 @@ def read_root():
 def path(src_id: int, dest_id: int):
     result = neo.shortest_path(src_id, dest_id)
     return {
-        "path": result
+        "paths": result
     }
 
 
