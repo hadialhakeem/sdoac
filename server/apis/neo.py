@@ -65,9 +65,23 @@ class NeoAPI:
                                           'RETURN node, score '
                                           'ORDER BY node.favorites DESC', name=name)
         records, summary, keys = query
+        characters_only = [record[0] for record in records]
+        return characters_only
 
-        self.log_query(query)
-        return query
+    def shortest_path(self, src_mal_id: int, dest_mal_id: int):
+        """
+        Get shortest_path path between 2 character nodes, given mal_ids
+        :param src_mal_id:
+        :param dest_mal_id:
+        :return:
+        """
+        query = self.driver.execute_query('MATCH p=allShortestPaths('
+                                          '(:Character {mal_id:$src})-[*]-(:Character {mal_id: $dest})) '
+                                          'RETURN nodes(p), length(p), '
+                                          'reduce(fav = 0, n in nodes(p) | fav + n.favorites) AS weight '
+                                          'ORDER BY weight DESC', src=src_mal_id, dest=dest_mal_id)
+        records, summary, keys = query
+        return records
 
     @staticmethod
     def log_query(query):

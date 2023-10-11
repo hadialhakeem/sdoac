@@ -1,5 +1,3 @@
-import time
-
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
@@ -39,22 +37,24 @@ def read_root():
     return {"Hello": "World"}
 
 
-class PathRequestData(BaseModel):
-    src_id: int
-    dest_id: int
-
-
-@app.post("/path")
-def path(req: PathRequestData):
-    return req
+@app.get("/path")
+def path(src_id: int, dest_id: int):
+    result = neo.shortest_path(src_id, dest_id)
+    return {
+        "path": result
+    }
 
 
 class SearchRequestData(BaseModel):
     character_name: str
 
 
-@app.post("/search")
-def path(req: SearchRequestData):
-    neo.search_character_by_name(req.character_name)
-    return req
+@app.get("/search")
+def path(q: str):
+    if q == "":
+        return []
+
+    characters = neo.search_character_by_name(q)
+    return characters
+
 
