@@ -50,11 +50,13 @@ class SearchRequestData(BaseModel):
 
 
 @app.get("/search")
-def path(q: str):
+def search_characters(q: str):
     if q == "":
         return []
 
     characters = neo.search_character_by_name(q)
-    return characters
+    return {
+        "data": characters
+    }
 
 
