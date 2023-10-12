@@ -79,7 +79,7 @@ class NeoAPI:
                                           '(:Character {mal_id:$src})-[*]-(:Character {mal_id: $dest})) '
                                           'RETURN nodes(p), length(p), '
                                           'reduce(fav = 0, n in nodes(p) | fav + n.favorites) AS weight '
-                                          'ORDER BY weight DESC', src=src_mal_id, dest=dest_mal_id)
+                                          'ORDER BY weight DESC LIMIT 1', src=src_mal_id, dest=dest_mal_id)
         records, summary, keys = query
         return records
 
