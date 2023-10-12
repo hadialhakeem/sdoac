@@ -7,7 +7,7 @@ Two characters are considered connected if,
 - They share the same voice actor/actress.
 
 With just these 2 criteria, we're able to connect (almost) any 2 arbitrary characters. 
-The app will display the shortest path, and when there is 1 shortest path the most "popular"
+The app will display the shortest path, and when there is more than 1 shortest path, the most "popular"
 path is picked. 
 
 ## Inspiration
