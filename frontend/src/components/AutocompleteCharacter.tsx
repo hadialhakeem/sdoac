@@ -43,7 +43,9 @@ const AutocompleteCharacter = () => {
                 console.log({ownerState})
                 return (
                     <li {...props} key={option.mal_id}>
-                        {option.name}
+                        <img src={option.img_url} alt={option.name} style={{
+                            width: 40,
+                        }}/>&nbsp;&nbsp;&nbsp;{option.name}
                     </li>
                 )
             }}
