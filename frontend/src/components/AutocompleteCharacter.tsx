@@ -1,40 +1,52 @@
 import {Autocomplete, TextField} from "@mui/material";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {Character} from "../api/models.ts";
 import {BackendAPI} from "../api/backend.ts";
 
 const AutocompleteCharacter = () => {
-    interface CharacterOption {
-        label: string
-        character: Character
-    }
-
-    const [options, setOptions] = useState<CharacterOption[]>([]);
+    const [options, setOptions] = useState<Character[]>([]);
     const [search, setSearch] = useState("")
 
-    const onInputChange = (newSearch: string) => {
-        setSearch(newSearch)
-        BackendAPI
-            .searchCharacters(newSearch)
-            .then(res => {
-                const newOptions: CharacterOption[] = res.data.map(character => {
-                    return {
-                        label: character.name,
-                        character: character
-                    }
-                })
-                setOptions(newOptions)
-            })
+    const onValueChange = (newValue: Character | null) => {
+        console.log(newValue)
     }
 
+    useEffect(() => {
+        const getOptions = setTimeout(() =>
+            BackendAPI
+            .searchCharacters(search)
+            .then(res => setOptions(res.data)),
+            1000)
+
+        return () => clearTimeout(getOptions)
+    }, [search])
+
+    
     return(
         <Autocomplete
             inputValue={search}
             options={options}
             sx={{ width: 400, float: 'left' }}
-            onInputChange={(_e, newSearch) => onInputChange(newSearch)}
+            onInputChange={(_e, newSearch) => setSearch(newSearch)}
+            onChange = {(_e, newValue) => onValueChange(newValue)}
+
+            isOptionEqualToValue={(option, value) =>
+                option.mal_id === value.mal_id}
+
             renderInput={(params) =>
                 <TextField {...params} label="Source Character"/>}
+            filterOptions={x => x}
+            getOptionLabel={option => option.name || ""}
+
+            renderOption={(props, option, state, ownerState) =>{
+                console.log({state})
+                console.log({ownerState})
+                return (
+                    <li {...props} key={option.mal_id}>
+                        {option.name}
+                    </li>
+                )
+            }}
         />
     )
 

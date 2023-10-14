@@ -60,7 +60,9 @@ def path(src_id: int, dest_id: int):
 @app.get("/search")
 def search_characters(q: str):
     if q == "":
-        return []
+        return {
+            "data": []
+        }
 
     characters = neo.search_character_by_name(q)
     return {
