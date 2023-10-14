@@ -3,7 +3,12 @@ import {useEffect, useState} from "react";
 import {Character} from "../api/models.ts";
 import {BackendAPI} from "../api/backend.ts";
 
-const AutocompleteCharacter = () => {
+interface AutocompleteCharacterProps {
+    textLabel: string
+    floatRight?: boolean
+}
+
+const AutocompleteCharacter = ({ textLabel, floatRight }: AutocompleteCharacterProps) => {
     const [options, setOptions] = useState<Character[]>([]);
     const [search, setSearch] = useState("")
 
@@ -16,17 +21,19 @@ const AutocompleteCharacter = () => {
             BackendAPI
             .searchCharacters(search)
             .then(res => setOptions(res.data)),
-            1000)
+            500)
 
         return () => clearTimeout(getOptions)
     }, [search])
 
+    let float = 'left';
+    if (floatRight) float = 'right';
     
     return(
         <Autocomplete
             inputValue={search}
             options={options}
-            sx={{ width: 400, float: 'left' }}
+            sx={{ width: 400, float: float }}
             onInputChange={(_e, newSearch) => setSearch(newSearch)}
             onChange = {(_e, newValue) => onValueChange(newValue)}
 
@@ -34,7 +41,7 @@ const AutocompleteCharacter = () => {
                 option.mal_id === value.mal_id}
 
             renderInput={(params) =>
-                <TextField {...params} label="Source Character"/>}
+                <TextField {...params} label={textLabel} />}
             filterOptions={x => x}
             getOptionLabel={option => option.name || ""}
 

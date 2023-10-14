@@ -10,6 +10,7 @@ const Home = () => {
             </Typography>
             <br />
             <br />
+            <br />
             <Search />
         </div>
     )
