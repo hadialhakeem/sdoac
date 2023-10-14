@@ -19,13 +19,13 @@ async def lifespan(app: FastAPI):
 
 
 origins = [
-    "http://localhost:8000"
+    "http://localhost:5173"
 ]
 
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -39,14 +39,22 @@ def read_root():
 
 @app.get("/path")
 def path(src_id: int, dest_id: int):
-    result = neo.shortest_path(src_id, dest_id)
+    shortest_path = neo.shortest_path(src_id, dest_id)
+
+    if not shortest_path:
+        return {
+            "path": None
+        }
+
+    nodes, path_length, weight = shortest_path
+
     return {
-        "paths": result
+        "path": {
+            "nodes": nodes,
+            "length": path_length,
+            "degrees": path_length//2,
+        }
     }
-
-
-class SearchRequestData(BaseModel):
-    character_name: str
 
 
 @app.get("/search")

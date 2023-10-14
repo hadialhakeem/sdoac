@@ -32,9 +32,9 @@ const AutocompleteCharacter = () => {
             inputValue={search}
             options={options}
             sx={{ width: 400, float: 'left' }}
-            onInputChange={(e, newSearch, reason) => onInputChange(newSearch)}
+            onInputChange={(_e, newSearch) => onInputChange(newSearch)}
             renderInput={(params) =>
-                <TextField {...params} label="Source Character" sx={{backgroundColor: 'lightcyan'}}/>}
+                <TextField {...params} label="Source Character"/>}
         />
     )
 

@@ -9,7 +9,11 @@ interface SearchCharactersResponse {
 
 
 interface ShortestPathResponse {
-
+    path: {
+        nodes: string,
+        length: number,
+        degrees: number,
+    }
 }
 
 class BackendAPI {

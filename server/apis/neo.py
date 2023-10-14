@@ -51,19 +51,20 @@ class NeoAPI:
 
     def create_mal_id_unique_constraint(self, node_label: NodeLabel):
         self.driver.execute_query(f"CREATE CONSTRAINT {node_label}MalID  IF NOT EXISTS "
-                                  f"FOR (n:{node_label}) REQUIRE n.mal_id IS UNIQUE")
+                                  f"FOR (n:{node_label}) REQUIRE n.mal_id IS UNIQUE;")
 
     def create_character_name_full_text_index(self):
         self.driver.execute_query("CREATE FULLTEXT INDEX CharacterNameIndex IF NOT EXISTS "
                                   "FOR (n:Character) ON EACH [n.name, n.nicknames] "
-                                  "OPTIONS {indexConfig: {`fulltext.analyzer`: 'simple'}}")
+                                  "OPTIONS {indexConfig: {`fulltext.analyzer`: 'simple'}};")
 
     def search_character_by_name(self, name: str):
 
         query = self.driver.execute_query('CALL db.index.fulltext.queryNodes("CharacterNameIndex", $name) '
                                           'YIELD node, score '
                                           'RETURN node, score '
-                                          'ORDER BY node.favorites DESC', name=name)
+                                          'ORDER BY node.favorites DESC '
+                                          'LIMIT 20;', name=name)
         records, summary, keys = query
         characters_only = [record[0] for record in records]
         return characters_only
@@ -79,9 +80,13 @@ class NeoAPI:
                                           '(:Character {mal_id:$src})-[*]-(:Character {mal_id: $dest})) '
                                           'RETURN nodes(p), length(p), '
                                           'reduce(fav = 0, n in nodes(p) | fav + n.favorites) AS weight '
-                                          'ORDER BY weight DESC LIMIT 1', src=src_mal_id, dest=dest_mal_id)
+                                          'ORDER BY weight DESC LIMIT 1;', src=src_mal_id, dest=dest_mal_id)
         records, summary, keys = query
-        return records
+
+        if len(records) == 0:
+            return None
+
+        return records[0]
 
     @staticmethod
     def log_query(query):
