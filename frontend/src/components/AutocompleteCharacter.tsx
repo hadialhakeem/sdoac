@@ -6,14 +6,16 @@ import {BackendAPI} from "../api/backend.ts";
 interface AutocompleteCharacterProps {
     textLabel: string
     floatRight?: boolean
+    setValueCB?: (character: Character | null) => void
 }
 
-const AutocompleteCharacter = ({ textLabel, floatRight }: AutocompleteCharacterProps) => {
+const AutocompleteCharacter = (props: AutocompleteCharacterProps) => {
     const [options, setOptions] = useState<Character[]>([]);
     const [search, setSearch] = useState("")
 
     const onValueChange = (newValue: Character | null) => {
         console.log(newValue)
+        if (props.setValueCB) props.setValueCB(newValue)
     }
 
     useEffect(() => {
@@ -27,7 +29,7 @@ const AutocompleteCharacter = ({ textLabel, floatRight }: AutocompleteCharacterP
     }, [search])
 
     let float = 'left';
-    if (floatRight) float = 'right';
+    if (props.floatRight) float = 'right';
     
     return(
         <Autocomplete
@@ -41,7 +43,7 @@ const AutocompleteCharacter = ({ textLabel, floatRight }: AutocompleteCharacterP
                 option.mal_id === value.mal_id}
 
             renderInput={(params) =>
-                <TextField {...params} label={textLabel} />}
+                <TextField {...params} label={props.textLabel} />}
             filterOptions={x => x}
             getOptionLabel={option => option.name || ""}
 

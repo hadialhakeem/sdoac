@@ -49,4 +49,10 @@ type Person = {
     family_name: string,
 }
 
-export type { Character, Anime, Person }
+type Path = {
+    nodes: (Character | Person | Anime)[],
+    length: number,
+    degrees: number,
+}
+
+export type { Character, Anime, Person, Path }

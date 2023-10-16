@@ -1,7 +1,7 @@
 import environment from "../utils/environment.ts";
 
 import axios from "axios";
-import {Character} from "./models.ts";
+import {Character, Path} from "./models.ts";
 
 interface SearchCharactersResponse {
     data: Character[]
@@ -9,11 +9,7 @@ interface SearchCharactersResponse {
 
 
 interface ShortestPathResponse {
-    path: {
-        nodes: string,
-        length: number,
-        degrees: number,
-    }
+    path: Path
 }
 
 class BackendAPI {
