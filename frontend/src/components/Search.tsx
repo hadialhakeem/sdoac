@@ -40,17 +40,16 @@ const Search = () => {
             <br />
             <br />
             <div>
-                <img src={source?.img_url} alt={source?.name} style={{width: 100}}/>
-                <img src={dest?.img_url} alt={dest?.name} style={{width: 100}}/>
+                <img src={source?.img_url} alt={source?.name} style={{width: 100, float: "left"}}/>
+                <img src={dest?.img_url} alt={dest?.name} style={{width: 100, float: "right"}}/>
             </div>
-            <br />
+            <div style={{clear: "both"}} />
             <br />
             <Button color="secondary" disabled={loading}
                     variant="contained" size="large"
                     onClick={onGoClick}>
                 GO!!
             </Button>
-            <br />
             <br />
             <br />
             {path && <DisplayPath path={path} />}

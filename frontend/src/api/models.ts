@@ -49,10 +49,28 @@ type Person = {
     family_name: string,
 }
 
+type Node = Character | Person | Anime
+
 type Path = {
-    nodes: (Character | Person | Anime)[],
+    nodes: Node[],
     length: number,
     degrees: number,
 }
 
-export type { Character, Anime, Person, Path }
+function isCharacter(node: Node): node is Character {
+    return 'nicknames' in node;
+}
+
+function isAnime(node: Node): node is Anime {
+    return 'members' in node;
+}
+
+function isPerson(node: Node): node is Person {
+    return 'given_name' in node;
+}
+
+
+export type { Character, Anime, Person, Path, Node }
+export { isCharacter,isAnime, isPerson }
+
+
