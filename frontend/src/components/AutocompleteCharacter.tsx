@@ -1,4 +1,4 @@
-import {Autocomplete, Paper, TextField} from "@mui/material";
+import {Autocomplete, Paper, PaperProps, TextField} from "@mui/material";
 import {useEffect, useState} from "react";
 import {Character} from "../api/models.ts";
 import {BackendAPI} from "../api/backend.ts";
@@ -9,7 +9,7 @@ interface AutocompleteCharacterProps {
     setValueCB?: (character: Character | null) => void
 }
 
-const WrappedPaperComponent = (props: any) => {
+const WrappedPaperComponent = (props: PaperProps) => {
     return (
         <Paper {...props} sx={{backgroundColor: '#fce8f4'}} elevation={12}>
             {props.children}
