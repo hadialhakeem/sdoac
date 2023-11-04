@@ -14,7 +14,6 @@ const AutocompleteCharacter = (props: AutocompleteCharacterProps) => {
     const [search, setSearch] = useState("")
 
     const onValueChange = (newValue: Character | null) => {
-        console.log(newValue)
         if (props.setValueCB) props.setValueCB(newValue)
     }
 

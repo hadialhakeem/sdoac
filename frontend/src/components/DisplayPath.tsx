@@ -16,7 +16,7 @@ interface RenderNodeProps {
 const RenderNode = (props: RenderNodeProps) => {
 
     return (
-        <Card sx={{ display: 'flex', maxWidth: 500, border: '5px solid lightblue'}}>
+        <Card sx={{ display: 'flex', maxWidth: 500, border: '5px solid lightblue'}} elevation={24}>
             <CardMedia
                 component="img"
                 alt={props.title}
