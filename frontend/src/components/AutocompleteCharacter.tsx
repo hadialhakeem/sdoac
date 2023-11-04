@@ -1,4 +1,4 @@
-import {Autocomplete, TextField} from "@mui/material";
+import {Autocomplete, Paper, TextField} from "@mui/material";
 import {useEffect, useState} from "react";
 import {Character} from "../api/models.ts";
 import {BackendAPI} from "../api/backend.ts";
@@ -7,6 +7,14 @@ interface AutocompleteCharacterProps {
     textLabel: string
     floatRight?: boolean
     setValueCB?: (character: Character | null) => void
+}
+
+const WrappedPaperComponent = (props: any) => {
+    return (
+        <Paper {...props} sx={{backgroundColor: '#fce8f4'}} elevation={12}>
+            {props.children}
+        </Paper>
+    )
 }
 
 const AutocompleteCharacter = (props: AutocompleteCharacterProps) => {
@@ -57,6 +65,8 @@ const AutocompleteCharacter = (props: AutocompleteCharacterProps) => {
                     </li>
                 )
             }}
+
+            PaperComponent={WrappedPaperComponent}
         />
     )
 
