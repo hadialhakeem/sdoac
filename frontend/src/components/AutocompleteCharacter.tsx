@@ -11,7 +11,7 @@ interface AutocompleteCharacterProps {
 
 const WrappedPaperComponent = (props: PaperProps) => {
     return (
-        <Paper {...props} sx={{backgroundColor: '#fce8f4'}} elevation={12}>
+        <Paper {...props} sx={{backgroundColor: '#fff0fd'}} elevation={12}>
             {props.children}
         </Paper>
     )
@@ -42,7 +42,7 @@ const AutocompleteCharacter = (props: AutocompleteCharacterProps) => {
         <Autocomplete
             inputValue={search}
             options={options}
-            sx={{ width: 400, float: float }}
+            sx={{ width: 380, float: float }}
             onInputChange={(_e, newSearch) => setSearch(newSearch)}
             onChange = {(_e, newValue) => onValueChange(newValue)}
 
